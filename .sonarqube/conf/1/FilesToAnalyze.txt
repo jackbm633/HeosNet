@@ -1,0 +1,6 @@
+﻿C:\Users\jackb\source\repos\HeosNet\HeosNet.Tests\DiscovererTests.cs
+C:\Users\jackb\source\repos\HeosNet\HeosNet.Tests\MSTestSettings.cs
+C:\Users\jackb\.nuget\packages\microsoft.testplatform.testhost\17.11.0\build\netcoreapp3.1\x64\testhost.exe
+C:\Users\jackb\.nuget\packages\microsoft.testplatform.testhost\17.11.0\build\netcoreapp3.1\x64\testhost.dll
+C:\Users\jackb\.nuget\packages\mstest.testadapter\3.6.0\build\net8.0\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
+C:\Users\jackb\.nuget\packages\mstest.testadapter\3.6.0\build\net8.0\Microsoft.TestPlatform.AdapterUtilities.dll
