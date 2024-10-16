@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-using HeosNet.Connection;
-using NSubstitute;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using HeosNet.Connection;
+using NSubstitute;
 
 namespace HeosNet.Tests
 {
@@ -36,12 +36,43 @@ namespace HeosNet.Tests
             // Arrange
             IUdpClient mockUdpClient = Substitute.For<IUdpClient>();
             Discoverer d = new(mockUdpClient);
-            mockUdpClient.ReceiveAsync().Returns(
-                new UdpReceiveResult(Encoding.ASCII.GetBytes(
-                    "urn:schemas-denon-com:device:ACT-Denon:1"),
-                    new IPEndPoint(IPAddress.Parse("192.168.0.5"), 12345)));
+            mockUdpClient
+                .ReceiveAsync()
+                .Returns(
+                    new UdpReceiveResult(
+                        Encoding.ASCII.GetBytes("urn:schemas-denon-com:device:ACT-Denon:1"),
+                        new IPEndPoint(IPAddress.Parse("192.168.0.5"), 12345)
+                    )
+                );
             // Act
             var ip = await d.DiscoverOneDeviceAsync(1);
+
+            // Assert
+            Assert.AreEqual(IPAddress.Parse("192.168.0.5"), ip);
+
+            // Clean up
+            d.Dispose();
+        }
+
+        /// <summary>
+        /// Checks that the discoverer returns the correct IP when receiving.
+        /// </summary>
+        [TestMethod]
+        public async Task DiscoverOneDeviceAsync_CustomEndpoint_ReturnsCorrectIP()
+        {
+            // Arrange
+            IUdpClient mockUdpClient = Substitute.For<IUdpClient>();
+            Discoverer d = new(mockUdpClient);
+            mockUdpClient
+                .ReceiveAsync()
+                .Returns(
+                    new UdpReceiveResult(
+                        Encoding.ASCII.GetBytes("urn:schemas-denon-com:device:ACT-Denon:1"),
+                        new IPEndPoint(IPAddress.Parse("192.168.0.5"), 12345)
+                    )
+                );
+            // Act
+            var ip = await d.DiscoverOneDeviceAsync(1, new IPEndPoint(IPAddress.Loopback, 12345));
 
             // Assert
             Assert.AreEqual(IPAddress.Parse("192.168.0.5"), ip);

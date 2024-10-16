@@ -41,9 +41,9 @@ namespace HeosNet.Connection
 
         internal const int DEFAULT_TIMEOUT = 5000;
         private const string SEARCH_TARGET_NAME = "urn:schemas-denon-com:device:ACT-Denon:1";
-        
-        private static string _ssdpMessage = string.Join("\r\n",
 
+        private static string _ssdpMessage = string.Join(
+            "\r\n",
             "M-SEARCH * HTTP/1.1",
             "HOST: 239.255.255.250:1900",
             $"ST: {SEARCH_TARGET_NAME}",
@@ -54,14 +54,29 @@ namespace HeosNet.Connection
         private readonly IUdpClient _udpClient;
 
         /// <summary>
-        /// Finds one HEOS device on the network. 
+        /// Finds one HEOS device on the network. Uses the default endpoint which will receive UDP
+        /// messages.
         /// </summary>
         /// <param name="timeout">Maximum amount of time (in ms) that a response will be waited
         /// for.</param>
         /// <returns>IP Address of a discovered HEOS device, otherwise null if a timeout occurs.</returns>
         public async Task<IPAddress> DiscoverOneDeviceAsync(int timeout)
         {
-            return (await DiscoverDevicesAsync(timeout, 1)).FirstOrDefault();
+            return (
+                await DiscoverDevicesAsync(timeout, 1, new IPEndPoint(IPAddress.Any, 0))
+            ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Finds one HEOS device on the network.
+        /// </summary>
+        /// <param name="timeout">Maximum amount of time (in ms) that a response will be waited
+        /// for.</param>
+        /// <param name="customEndpoint">Custom IP endpoint to bind to.</param>
+        /// <returns>IP Address of a discovered HEOS device, otherwise null if a timeout occurs.</returns>
+        public async Task<IPAddress> DiscoverOneDeviceAsync(int timeout, IPEndPoint customEndpoint)
+        {
+            return (await DiscoverDevicesAsync(timeout, 1, customEndpoint)).FirstOrDefault();
         }
 
         /// <summary>
@@ -69,10 +84,15 @@ namespace HeosNet.Connection
         /// </summary>
         /// <param name="timeout">The timeout period in milliseconds.</param>
         /// <param name="maxDevices">The maximum number of devices to discover. If null, discovers all available devices.</param>
+        /// <param name="bindEndpoint">IP endpoint to bind UDP client to - used when a custom network interface is used.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a collection of discovered IP addresses.</returns>
-        public async Task<IEnumerable<IPAddress>> DiscoverDevicesAsync(int timeout, int? maxDevices)
+        public async Task<IEnumerable<IPAddress>> DiscoverDevicesAsync(
+            int timeout,
+            int? maxDevices,
+            IPEndPoint bindEndpoint
+        )
         {
-            _udpClient.Bind(new IPEndPoint(IPAddress.Any, 0));
+            _udpClient.Bind(bindEndpoint);
             var message = Encoding.ASCII.GetBytes(_ssdpMessage);
             var addresses = new HashSet<IPAddress>();
 
@@ -94,22 +114,23 @@ namespace HeosNet.Connection
             });
 
             var timeoutTask = Task.Delay(timeout);
-            await _udpClient.SendAsync(message, message.Length, new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
+            await _udpClient.SendAsync(
+                message,
+                message.Length,
+                new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900)
+            );
 
             await Task.WhenAny(timeoutTask, recvTask);
             _udpClient.Close();
 
             return addresses;
-
-
         }
-
-        
 
         protected virtual void Dispose(bool disposing)
         {
             _udpClient.Dispose();
         }
+
         public void Dispose()
         {
             Dispose(disposing: true);
