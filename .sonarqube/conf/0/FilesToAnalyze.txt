@@ -1,3 +1,0 @@
-﻿C:\Users\jackb\source\repos\HeosNet\HeosNet\Connection\Discoverer.cs
-C:\Users\jackb\source\repos\HeosNet\HeosNet\Connection\UdpClientWrapper.cs
-C:\Users\jackb\source\repos\HeosNet\HeosNet\Interfaces\IUdpClient.cs
