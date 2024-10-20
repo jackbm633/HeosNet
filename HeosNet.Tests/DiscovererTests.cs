@@ -80,5 +80,41 @@ namespace HeosNet.Tests
             // Clean up
             d.Dispose();
         }
+
+        /// <summary>
+        /// Checks that the discoverer only returns one IP, even if multiple IPs are received over
+        /// the network.
+        /// </summary>
+        [TestMethod]
+        public async Task DiscoverOneDeviceAsync_MultipleDevicesFound_OnlyReturnsOne()
+        {
+            // Arrange
+            IUdpClient mockUdpClient = Substitute.For<IUdpClient>();
+            Discoverer d = new(mockUdpClient);
+            mockUdpClient
+                .ReceiveAsync()
+                .Returns(
+                    new UdpReceiveResult(
+                        Encoding.ASCII.GetBytes("urn:schemas-denon-com:device:ACT-Denon:1"),
+                        new IPEndPoint(IPAddress.Parse("192.168.0.5"), 12345)
+                    ),
+                    new UdpReceiveResult(
+                        Encoding.ASCII.GetBytes("urn:schemas-denon-com:device:ACT-Denon:1"),
+                        new IPEndPoint(IPAddress.Parse("192.168.0.6"), 12345)
+                    ),
+                    new UdpReceiveResult(
+                        Encoding.ASCII.GetBytes("urn:schemas-denon-com:device:ACT-Denon:1"),
+                        new IPEndPoint(IPAddress.Parse("192.168.0.7"), 12345)
+                    )
+                );
+            // Act
+            var ip = await d.DiscoverOneDeviceAsync();
+
+            // Assert
+            Assert.AreEqual(IPAddress.Parse("192.168.0.5"), ip);
+
+            // Clean up
+            d.Dispose();
+        }
     }
 }

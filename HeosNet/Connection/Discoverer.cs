@@ -55,6 +55,16 @@ namespace HeosNet.Connection
 
         /// <summary>
         /// Finds one HEOS device on the network. Uses the default endpoint which will receive UDP
+        /// messages. Uses the default timeout of 5 seconds.
+        /// </summary>
+        /// <returns>IP Address of a discovered HEOS device, otherwise null if a timeout occurs.</returns>
+        public async Task<IPAddress> DiscoverOneDeviceAsync()
+        {
+            return await DiscoverOneDeviceAsync(DEFAULT_TIMEOUT);
+        }
+        
+        /// <summary>
+        /// Finds one HEOS device on the network. Uses the default endpoint which will receive UDP
         /// messages.
         /// </summary>
         /// <param name="timeout">Maximum amount of time (in ms) that a response will be waited
