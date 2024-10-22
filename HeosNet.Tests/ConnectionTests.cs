@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Sockets;
 using HeosNet.Connection;
 using HeosNet.Interfaces;
+using HeosNet.Models;
 using NSubstitute;
 
 namespace HeosNet.Tests
@@ -34,13 +35,39 @@ namespace HeosNet.Tests
         {
             // Arrange
             ITcpClient client = Substitute.For<ITcpClient>();
+            client.Stream.Returns(new MemoryStream());
 
             // Act
-            HeosClient c = new HeosClient(IPAddress.Parse("192.168.0.7"), client);
+            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client, []);
             await c.ConnectAsync();
 
             // Assert
             Assert.IsTrue(c.Connected);
+        }
+
+        /// <summary>
+        /// Checks that a mock HEOS client works properly.
+        /// </summary>
+        [TestMethod]
+        public async Task HeosClient_ReceivesMessages()
+        {
+            // Arrange
+            MemoryStream mockStream = new();
+            using StreamWriter sw = new(mockStream);
+            await sw.WriteLineAsync("{\"heos\": {\"command\": \"system/heart_beat\", \"result\": \"success\", \"message\": \"m\"}}");
+            await sw.FlushAsync();
+            ITcpClient client = Substitute.For<ITcpClient>();
+            mockStream.Position = 0;
+            client.Stream.Returns(mockStream);
+            // Act & Assert
+            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client, new Dictionary<HeosCommand, Func<HeosResponse, Task>>
+                {
+                    { new HeosCommand {CommandGroup = "system", Command = "heart_beat"}, (message) => {
+                        Assert.AreEqual("success", message.Header.Result);
+                        return Task.CompletedTask;
+                    } },
+                });
+            await c.ConnectAsync();
         }
     }
 }

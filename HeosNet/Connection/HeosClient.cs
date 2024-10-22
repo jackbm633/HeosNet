@@ -15,9 +15,14 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using HeosNet.Interfaces;
+using HeosNet.Models;
 
 namespace HeosNet.Connection
 {
@@ -25,25 +30,56 @@ namespace HeosNet.Connection
     {
         private const int HEOS_PORT = 1255;
         private readonly ITcpClient _client;
+        private Stream _stream;
         private readonly IPAddress _heosIp;
+        private readonly JsonSerializerOptions _serializerOptions;
+        private readonly Dictionary<HeosCommand, Func<HeosResponse, Task>> _handlers;
 
         public bool Connected { get; private set; }
 
-        public HeosClient(IPAddress ip) : this(ip, new TcpClientWrapper())
+        public HeosClient(IPAddress ip) : this(ip, new TcpClientWrapper(), new Dictionary<HeosCommand, Func<HeosResponse, Task>>())
         {
         }
 
-        public HeosClient(IPAddress ip, ITcpClient client)
+        public HeosClient(IPAddress ip, ITcpClient client, Dictionary<HeosCommand, Func<HeosResponse, Task>> handlers)
         {
             _client = client; 
             _heosIp = ip;
+            _serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            _handlers = handlers;
         }
 
         public async Task ConnectAsync()
         {
             await _client.ConnectAsync(_heosIp, HEOS_PORT);
+            _stream = _client.Stream;
             Connected = true;
+
+            await ReceiveMessagesAsync();
+
         }
+
+        private async Task ReceiveMessagesAsync()
+        {
+            using (StreamReader sr = new StreamReader(_stream))
+            {
+                while (Connected && !sr.EndOfStream)
+                {
+                    var line = await sr.ReadLineAsync();
+                    if (line != null)
+                    {
+                        HeosResponse lineParsed = JsonSerializer.Deserialize<HeosResponse>(line, _serializerOptions);
+                        if (_handlers.ContainsKey(lineParsed.Header.Command))
+                        {
+                            await _handlers[lineParsed.Header.Command](lineParsed);
+                        }
+                    }
+                }
+                
+            }
+            
+        }
+
 
     }
 }
