@@ -25,12 +25,7 @@ namespace HeosNet.Models.Conversion
         public override HeosCommand Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var command = reader.GetString();
-            var commandParts = command.Split('/');
-            return new HeosCommand
-            {
-                CommandGroup = commandParts[0],
-                Command = commandParts[1],
-            };
+            return HeosCommand.ParseHeosCommandString(command);
         }
 
         public override void Write(Utf8JsonWriter writer, HeosCommand value, JsonSerializerOptions options)

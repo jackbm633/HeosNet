@@ -18,6 +18,7 @@
 using HeosNet.Models.Conversion;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace HeosNet.Models
@@ -27,20 +28,44 @@ namespace HeosNet.Models
     {
         public string CommandGroup { get; set; }
         public string Command { get; set; }
-        public Dictionary<string, object> Attributes { get; set; }
+        public Dictionary<string, object> Attributes { get; }
 
-        public bool Equals(HeosCommand other)
+        public override bool Equals(object obj)
         {
-            if (other == null)
+            if (!(obj is HeosCommand))
             {
                 return false;
             }
-            return other.Command == Command && other.CommandGroup == CommandGroup;
+            return ((HeosCommand)obj).Command == Command && ((HeosCommand)obj).CommandGroup == CommandGroup;
+        }
+        public bool Equals(HeosCommand other)
+        {
+            return Equals((object)other);
         }
 
         public override int GetHashCode()
         {
             return Command.GetHashCode() ^ CommandGroup.GetHashCode();
         }
+
+        public static HeosCommand ParseHeosCommandString(string command)
+        {
+            if (command == null)
+            {
+                throw new ArgumentNullException(command);
+            }
+            var commandParts = command.Split('/');
+            if (commandParts.Length != 2)
+            {
+                throw new InvalidDataException("Invalid command: number of parts is incorrect");
+            }
+            return new HeosCommand
+            {
+                CommandGroup = commandParts[0],
+                Command = commandParts[1],
+            };
+        }
+
+
     }
 }
