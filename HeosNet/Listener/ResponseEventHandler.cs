@@ -73,5 +73,23 @@ namespace HeosNet.Listener
             }
             return this;
         }
+
+        public ResponseEventHandler Once(HeosCommand evt, Func<HeosResponse, Task> listener)
+        {
+            if (evt != null)
+            {
+                var eventString = evt.ToHeosCommandString();
+                async void Handler(object sender, ResponseEventHandlerArgs e)
+                {
+                    if (e.EventString == eventString)
+                    {
+                        await listener.Invoke(e.Message);
+                        EventHandler -= Handler;
+                    }
+                }
+                EventHandler += Handler;
+            }
+            return this;
+        }
     }
 }

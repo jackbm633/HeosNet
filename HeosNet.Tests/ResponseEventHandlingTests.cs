@@ -85,4 +85,30 @@ public class ResponseEventHandlingTests
         // Assert
         await func.ReceivedWithAnyArgs().Invoke(Arg.Any<HeosResponse>());
     }
+
+    /// <summary>
+    /// Once and On functions work as expected.
+    /// </summary>
+    [TestMethod]
+    public async Task ResponseEventHandler_Once_On_WorkAsExpected()
+    {
+        // Arrange
+        var handler = new ResponseEventHandler();
+        var onceFunc = Substitute.For<Func<HeosResponse, Task>>();
+        var onFunc = Substitute.For<Func<HeosResponse, Task>>();
+
+        // Act
+        handler.On(strippedMessage.Header.Command, onFunc);
+        handler.Once(strippedMessage.Header.Command, onceFunc);
+
+        await handler.PutAsync(message);
+        await handler.PutAsync(message);
+        await handler.PutAsync(message);
+
+
+        // Assert
+        await onFunc.ReceivedWithAnyArgs(3).Invoke(Arg.Any<HeosResponse>());
+        await onceFunc.ReceivedWithAnyArgs(1).Invoke(Arg.Any<HeosResponse>());
+
+    }
 }
