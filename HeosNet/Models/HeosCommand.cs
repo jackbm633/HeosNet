@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-using HeosNet.Models.Conversion;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Serialization;
+using HeosNet.Models.Conversion;
 
 namespace HeosNet.Models
 {
     [JsonConverter(typeof(HeosCommandJsonConverter))]
+    [Serializable]
     public sealed class HeosCommand : IEquatable<HeosCommand>
     {
         public string CommandGroup { get; set; }
         public string Command { get; set; }
-        public Dictionary<string, object> Attributes { get; }
+        public Dictionary<string, object> Attributes { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -36,8 +37,10 @@ namespace HeosNet.Models
             {
                 return false;
             }
-            return ((HeosCommand)obj).Command == Command && ((HeosCommand)obj).CommandGroup == CommandGroup;
+            return ((HeosCommand)obj).Command == Command
+                && ((HeosCommand)obj).CommandGroup == CommandGroup;
         }
+
         public bool Equals(HeosCommand other)
         {
             return Equals((object)other);
@@ -59,13 +62,12 @@ namespace HeosNet.Models
             {
                 throw new InvalidDataException("Invalid command: number of parts is incorrect");
             }
-            return new HeosCommand
-            {
-                CommandGroup = commandParts[0],
-                Command = commandParts[1],
-            };
+            return new HeosCommand { CommandGroup = commandParts[0], Command = commandParts[1] };
         }
 
-
+        public string ToHeosCommandString()
+        {
+            return CommandGroup + "/" + Command;
+        }
     }
 }

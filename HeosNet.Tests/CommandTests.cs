@@ -19,12 +19,8 @@ public class CommandTests
         HeosCommand result = HeosCommand.ParseHeosCommandString(command);
 
         // Assert
-        result.Should().BeEquivalentTo(
-            new HeosCommand 
-            {
-                CommandGroup = "system",
-                Command = "heart_beat"
-            }
-        );
+        result
+            .Should()
+            .BeEquivalentTo(new HeosCommand { CommandGroup = "system", Command = "heart_beat" });
     }
 }

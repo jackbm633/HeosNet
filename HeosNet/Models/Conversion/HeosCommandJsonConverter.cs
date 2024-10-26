@@ -22,13 +22,21 @@ namespace HeosNet.Models.Conversion
 {
     internal class HeosCommandJsonConverter : JsonConverter<HeosCommand>
     {
-        public override HeosCommand Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override HeosCommand Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options
+        )
         {
             var command = reader.GetString();
             return HeosCommand.ParseHeosCommandString(command);
         }
 
-        public override void Write(Utf8JsonWriter writer, HeosCommand value, JsonSerializerOptions options)
+        public override void Write(
+            Utf8JsonWriter writer,
+            HeosCommand value,
+            JsonSerializerOptions options
+        )
         {
             throw new NotSupportedException();
         }

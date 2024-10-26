@@ -62,7 +62,7 @@ namespace HeosNet.Connection
         {
             return await DiscoverOneDeviceAsync(DEFAULT_TIMEOUT);
         }
-        
+
         /// <summary>
         /// Finds one HEOS device on the network. Uses the default endpoint which will receive UDP
         /// messages.

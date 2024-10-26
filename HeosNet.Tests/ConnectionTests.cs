@@ -38,7 +38,7 @@ namespace HeosNet.Tests
             client.Stream.Returns(new MemoryStream());
 
             // Act
-            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client, []);
+            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client);
             await c.ConnectAsync();
 
             // Assert
@@ -54,19 +54,23 @@ namespace HeosNet.Tests
             // Arrange
             MemoryStream mockStream = new();
             using StreamWriter sw = new(mockStream);
-            await sw.WriteLineAsync("{\"heos\": {\"command\": \"system/heart_beat\", \"result\": \"success\", \"message\": \"m\"}}");
+            await sw.WriteLineAsync(
+                "{\"heos\": {\"command\": \"system/heart_beat\", \"result\": \"success\", \"message\": \"m\"}}"
+            );
             await sw.FlushAsync();
             ITcpClient client = Substitute.For<ITcpClient>();
             mockStream.Position = 0;
             client.Stream.Returns(mockStream);
             // Act & Assert
-            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client, new Dictionary<HeosCommand, Func<HeosResponse, Task>>
+            HeosClient c = new(IPAddress.Parse("192.168.0.7"), client);
+            c.EventHandler.On(
+                new HeosCommand { CommandGroup = "system", Command = "heart_beat" },
+                (message) =>
                 {
-                    { new HeosCommand {CommandGroup = "system", Command = "heart_beat"}, (message) => {
-                        Assert.AreEqual("success", message.Header.Result);
-                        return Task.CompletedTask;
-                    } },
-                });
+                    Assert.AreEqual("success", message.Header.Result);
+                    return Task.CompletedTask;
+                }
+            );
             await c.ConnectAsync();
         }
     }

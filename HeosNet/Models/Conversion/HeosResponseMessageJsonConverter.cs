@@ -23,12 +23,20 @@ namespace HeosNet.Models.Conversion
 {
     internal class HeosResponseMessageJsonConverter : JsonConverter<HeosResponseMessage>
     {
-        public override HeosResponseMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override HeosResponseMessage Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options
+        )
         {
             return new HeosResponseMessage { Unparsed = reader.GetString() };
         }
 
-        public override void Write(Utf8JsonWriter writer, HeosResponseMessage value, JsonSerializerOptions options)
+        public override void Write(
+            Utf8JsonWriter writer,
+            HeosResponseMessage value,
+            JsonSerializerOptions options
+        )
         {
             throw new NotSupportedException();
         }

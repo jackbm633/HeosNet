@@ -36,7 +36,10 @@ namespace HeosNet.Connection
             _client = new TcpClient();
         }
 
-        public Stream Stream { get => _client.GetStream(); }
+        public Stream Stream
+        {
+            get => _client.GetStream();
+        }
 
         public async Task ConnectAsync(IPAddress address, int port)
         {
@@ -54,7 +57,6 @@ namespace HeosNet.Connection
                 disposedValue = true;
             }
         }
-
 
         public void Dispose()
         {

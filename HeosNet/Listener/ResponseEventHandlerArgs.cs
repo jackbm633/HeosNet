@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Heos.NET
  * Copyright (C) 2024 Jack Beckitt-Marshall
  *
@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using HeosNet.Models.Conversion;
+using HeosNet.Models;
 
-namespace HeosNet.Models
+namespace HeosNet.Listener
 {
-    [JsonConverter(typeof(HeosResponseMessageJsonConverter))]
-    public class HeosResponseMessage
+    public class ResponseEventHandlerArgs
     {
-        public string Unparsed { get; set; }
-        public Dictionary<string, object> Parsed { get; }
+        public string EventString { get; set; }
+        public HeosResponse Message { get; set; }
     }
 }
