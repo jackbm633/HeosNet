@@ -24,16 +24,35 @@ namespace HeosNet.Tests;
 [TestClass]
 public class ResponseEventHandlingTests
 {
-    private readonly HeosResponse strippedMessage = new HeosResponse
-    {
-        Header = new HeosHeader
+    private readonly HeosResponse message =
+        new()
         {
-            Command = new HeosCommand { CommandGroup = "system", Command = "heart_beat" },
-            Result = "success",
-            Message = new HeosResponseMessage(),
-        },
-    };
+            Header = new HeosHeader
+            {
+                Command = new HeosCommand
+                {
+                    CommandGroup = "system",
+                    Command = "heart_beat",
+                    Attributes = new Dictionary<string, object>() { { "pid", 2 }, { "step", 5 } },
+                },
+                Result = "success",
+                Message = new HeosResponseMessage(),
+            },
+        };
+    private readonly HeosResponse strippedMessage =
+        new()
+        {
+            Header = new HeosHeader
+            {
+                Command = new HeosCommand { CommandGroup = "system", Command = "heart_beat" },
+                Result = "success",
+                Message = new HeosResponseMessage(),
+            },
+        };
 
+    /// <summary>
+    /// An event can be listened to.
+    /// </summary>
     [TestMethod]
     public async Task ResponseEventHandler_CanListenToEvent()
     {
@@ -46,6 +65,24 @@ public class ResponseEventHandlingTests
         await handler.PutAsync(strippedMessage);
 
         // Assert
-        await func.Received().Invoke(strippedMessage);
+        await func.ReceivedWithAnyArgs().Invoke(Arg.Any<HeosResponse>());
+    }
+
+    /// <summary>
+    /// Attributes in responses should be ignored.
+    /// </summary>
+    [TestMethod]
+    public async Task ResponseEventHandler_IgnoresAttributes()
+    {
+        // Arrange
+        var handler = new ResponseEventHandler();
+        var func = Substitute.For<Func<HeosResponse, Task>>();
+
+        // Act
+        handler.On(strippedMessage.Header.Command, func);
+        await handler.PutAsync(message);
+
+        // Assert
+        await func.ReceivedWithAnyArgs().Invoke(Arg.Any<HeosResponse>());
     }
 }
